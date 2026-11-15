@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marswalk HUD · Interplanetary Survival Guide</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&display=swap">
+<link rel="stylesheet" href="css/hud.css?v=7">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+</head>
+<body>
+<!-- Traducción: cada texto fijo lleva su versión en inglés en data-en (y data-en-title para los títulos). -->
+<div id="map"></div>
+<div id="pov"><img id="povImg" alt=""><div id="povBar"></div></div>
+<div class="visor">
+  <div class="vig"></div><div class="scan"></div>
+  <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+    <path d="M2,14 Q50,-3 98,14"/><path d="M2,86 Q50,103 98,86"/>
+    <path d="M2,14 Q-0.5,50 2,86"/><path d="M98,14 Q100.5,50 98,86"/>
+  </svg>
+</div>
+
+<!-- barra superior -->
+<div class="hud top">
+  <button data-mode="global" data-en="Mars">Marte</button>
+  <svg id="compass" class="l"></svg>
+  <span class="g big" style="font-size:15px;padding:0 20px" data-en="DATA COVERAGE BY BLOCK">COBERTURA DE DATOS POR BLOQUE</span>
+  <button data-mode="jezero">Jezero</button>
+  <button data-mode="gale">Gale</button>
+  <button data-mode="sharp" data-en="Mount Sharp">Monte Sharp</button>
+  <button id="btnLang" title="Cambiar idioma" data-en-title="Change language">EN</button>
+</div>
+<div id="swipe" title="Arrastra para comparar" data-en-title="Drag to compare"><b>◀ ▶</b></div>
+<div class="hud l" id="alert"></div>
+
+<!-- ===== VISOR DE ZONA ===== -->
+<div class="hud tl l">
+  <h3><span data-en="Target">Objetivo</span> · <span id="zName"></span></h3>
+  <div class="big" id="nxName"></div>
+  <div class="dim sm" id="nxRole"></div>
+  <div class="kv" style="margin-top:6px">
+    <span data-en="Distance to target">Distancia al objetivo</span><b id="nxDist"></b>
+    <span data-en="Heading">Rumbo</span><b id="nxBrg"></b>
+    <span data-en="Segment slope">Pendiente del tramo</span><b id="nxSlope"></b>
+    <span data-en="Elevation">Altura</span><b id="nxElev"></b>
+    <span data-en="To base (straight line)">A la base (línea recta)</span><b id="nxBase"></b>
+  </div>
+  <div class="stoprow" id="stops"></div>
+</div>
+
+<div class="hud tr l">
+  <h3 data-en="Go / no-go">Estado de salida</h3>
+  <div id="verdict"><div id="vDot"></div><div class="big" id="vTxt"></div></div>
+  <div class="chk" id="checks"></div>
+</div>
+
+<div class="hud bl l">
+  <h3><span data-en="Suit">Traje</span> <span style="letter-spacing:0;font-weight:500" data-en="· simulated">· simulado</span></h3>
+  <div class="barrow"><span data-en="Oxygen">Oxígeno</span><span class="mono" id="o2t"></span></div><div class="bar"><div id="o2"></div></div>
+  <div class="barrow"><span data-en="Battery">Batería</span><span class="mono" id="bat"></span></div><div class="bar"><div id="batb"></div></div>
+  <div class="kv">
+    <span data-en="Time">Tiempo</span><b id="tEl"></b>
+    <span data-en="Local time">Hora local</span><b id="tNow"></b>
+    <span data-en="Dose">Dosis</span><b id="dose"></b>
+    <span data-en="Outside">Exterior</span><b id="tExt"></b>
+  </div>
+</div>
+
+<div class="hud bc l">
+  <div style="display:flex;justify-content:space-between;align-items:baseline">
+    <h3 style="margin:0"><span data-en="Route">Ruta</span> · <span id="rTot"></span></h3>
+    <span class="mono sm" id="rPos"></span>
+  </div>
+  <svg id="profile" viewBox="0 0 600 74" preserveAspectRatio="none"></svg>
+  <div class="rrow"><button class="play" id="btnPlay" title="Recorrer la ruta" data-en-title="Walk the route">▶</button><input type="range" id="inPos" min="0" max="1000" value="0" aria-label="Posición en la ruta"></div>
+  <div class="dim sm" style="display:flex;justify-content:space-between"><span data-en="▶ walks the route · or drag the slider">▶ recorre la ruta · o arrastra el control</span><span><span class="ok">■</span> &lt;8° <span class="warn">■</span> 8–15° <span class="bad">■</span> &gt;15°</span></div>
+</div>
+
+<div class="hud br l">
+  <div class="tabs"><button class="on" data-t="tLay" data-en="Layers">Capas</button><button data-t="tCon" data-en="Conditions">Condiciones</button><button data-t="tSci" data-en="Science">Ciencia</button><button data-t="tSrc" data-en="Data">Datos</button></div>
+  <div class="tab on" id="tLay">
+    <div class="lay" id="layList"></div>
+    <div class="lay" style="margin-top:3px">
+      <label><input type="checkbox" id="lyRoute" checked><span data-en="Route">Ruta</span></label>
+      <label><input type="checkbox" id="lyStops" checked><span data-en="Stops">Paradas</span></label>
+      <label><input type="checkbox" id="lyHaz" checked><span data-en="Hazards">Obstáculos</span></label>
+    </div>
+    <button id="btnMark" style="margin-top:6px" title="Luego toca el mapa donde veas una roca o arena" data-en-title="Then tap the map where you see a rock or sand" data-en="＋ Mark hazard">＋ Marcar obstáculo</button>
+    <div class="ctl" style="margin-top:6px"><span data-en="Compare">Comparar</span><select id="inCmp" style="grid-column:2/4" title="La capa elegida se ve a la derecha de la línea; arrástrala" data-en-title="The chosen layer shows right of the line; drag it"></select></div>
+    <div class="ctl" style="margin-top:6px"><span data-en="Opacity">Opacidad</span><input type="range" id="inOp" min="0.2" max="1" step="0.05" value="0.6"><output id="oOp"></output></div>
+    <div class="dim sm" style="margin-top:4px" data-en="Night thermal: bright = firm rock, dark = loose sand.">Térmico noche: claro = roca firme, oscuro = arena suelta.</div>
+  </div>
+  <div class="tab" id="tCon">
+    <div class="ctl"><span data-en="Date">Fecha</span><input type="range" id="inSol" min="0" max="0" value="0" aria-label="Sol del clima"><output id="oSol"></output></div>
+    <div class="ctl"><span data-en="Start">Salida</span><input type="range" id="inStart" min="7" max="15" step="0.5" value="9"><output id="oStart"></output></div>
+    <div class="ctl"><span data-en="Min/stop">Min/parada</span><input type="range" id="inStop" min="10" max="60" step="5" value="25"><output id="oStop"></output></div>
+    <div class="ctl"><span data-en="Gear">Equipo</span><input type="range" id="inLoad" min="0" max="40" step="5" value="15"><output id="oLoad"></output></div>
+    <div class="lay">
+      <label><input type="checkbox" id="inPair" checked><span data-en="Buddy pair">Caminata en pareja</span></label>
+      <label><input type="checkbox" id="inRover"><span data-en="Cargo rover carries gear">Rover de carga lleva el equipo</span></label>
+    </div>
+    <div class="ctl"><span data-en="Dust τ">Polvo τ</span><input type="range" id="inTau" min="0.2" max="4" step="0.1" value="0.6"><output id="oTau"></output></div>
+    <div class="ctl" style="margin-top:4px"><span data-en="Space weather">Clima espacial</span><select id="inRad" style="grid-column:2/4">
+      <option value="quiet" data-en="Quiet">Tranquilo</option><option value="watch" data-en="Solar alert">Alerta solar</option><option value="sep" data-en="Particle event">Evento de partículas</option></select></div>
+    <div class="sm" style="margin-top:2px" id="swNote" data-en="Querying NASA DONKI…">Consultando NASA DONKI…</div>
+    <div class="dim sm" style="margin-top:4px" id="wxNote"></div>
+  </div>
+  <div class="tab" id="tSci"></div>
+  <div class="tab" id="tSrc"></div>
+</div>
+
+<div class="hud l" id="card"></div>
+<div class="hud" id="povCap"></div>
+
+<!-- ===== VISTA GLOBAL ===== -->
+<div class="hud tl g">
+  <h3 data-en="Legend">Leyenda</h3>
+  <div class="leg">
+    <i style="background:#6dffa8"></i><span data-en="Developed zone (Jezero, Gale, Mount Sharp)">Zona desarrollada (Jezero, Gale, Monte Sharp)</span>
+    <i style="background:#8feaff"></i><span data-en="With a surface mission">Con misión de superficie</span>
+    <i style="background:#ffcf5a"></i><span data-en="Orbit: 3 data types">Órbita: 3 tipos de dato</span>
+    <i style="background:#8a9aa0"></i><span data-en="Orbit: 2 data types">Órbita: 2 tipos de dato</span>
+  </div>
+  <div class="dim sm" style="margin-top:8px" data-en="15° × 15° blocks. Six data types: optical, topography, thermal, atmosphere, radiation and in-situ geology.">Bloques de 15° × 15°. Seis tipos de dato: óptico, topografía, térmico, atmósfera, radiación y geología in situ.</div>
+</div>
+<div class="hud tr g" id="blockInfo"><h3 data-en="Block">Bloque</h3><div class="dim" data-en="Tap a block on the map.">Toca un bloque del mapa.</div></div>
+
+<div class="hud" id="offline"><span data-en="NASA maps do not load in this view.">Los mapas de NASA no cargan en esta vista.</span><br><span data-en="Open index.html in a browser with internet to see the terrain.">Abre index.html en un navegador con internet para ver el terreno.</span></div>
+<div id="credit" data-en="Data: NASA/JPL-Caltech · USGS · ASU · MSSS, via NASA Mars Trek, Mars 2020 and MSL">Datos: NASA/JPL-Caltech · USGS · ASU · MSSS, vía NASA Mars Trek, Mars 2020 y MSL</div>
+
+<script src="js/data.js?v=7"></script>
+<script src="js/en.js?v=7"></script>
+<script src="js/app.js?v=7"></script>
+</body>
+</html>

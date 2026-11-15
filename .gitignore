@@ -1,0 +1,17 @@
+# Only the app (marswalk/) goes to the repository.
+
+# Space Apps demo deck: scripts, screenshots, .pptx and .pdf
+demo/
+
+# graphify knowledge graph
+graphify-out/
+
+# IDE and OS files
+.idea/
+.vscode/
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Python caches from helper scripts
+__pycache__/
