@@ -4,6 +4,9 @@ Visor de casco para planear y ejecutar una caminata en Marte. Proyecto para el r
 **Interplanetary Survival Guide: Martian Map** del NASA Space Apps Challenge 2026.
 La app está en la carpeta [`marswalk/`](marswalk/).
 
+**Pruébala en línea:** <https://andresf-galeanot.github.io/nasa_hackathon_2026/marswalk/>
+(sin instalar nada; necesita internet para los mapas de NASA).
+
 ## Cómo ejecutarlo
 
 Opción 1: doble clic en `marswalk/index.html` y abrirlo en un navegador con internet.
