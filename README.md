@@ -1,15 +1,17 @@
-# Marswalk HUD
+# MarsWalk Map
 
 Visor de casco para planear y ejecutar una caminata en Marte. Proyecto para el reto
 **Interplanetary Survival Guide: Martian Map** del NASA Space Apps Challenge 2026.
+La app está en la carpeta [`marswalk/`](marswalk/).
 
 ## Cómo ejecutarlo
 
-Opción 1: doble clic en `index.html` y abrirlo en un navegador con internet.
+Opción 1: doble clic en `marswalk/index.html` y abrirlo en un navegador con internet.
 
 Opción 2, como servidor local:
 
 ```
+cd marswalk
 python -m http.server 8000
 ```
 
@@ -51,7 +53,7 @@ Si el terreno no aparece, la app muestra un aviso en pantalla.
   a menos de 1,38 km de la base en línea recta (límite de NASA para Artemis III). El panel
   de objetivo muestra la distancia a la base en cada momento.
 - **Idioma:** el botón EN / ES de la barra superior cambia toda la página entre español e
-  inglés y recuerda la elección. Los textos en inglés de las zonas están en `js/en.js`.
+  inglés y recuerda la elección. Los textos en inglés de las zonas están en `marswalk/js/en.js`.
 - **Pantallas:** computadora y tableta horizontal muestran el visor completo. En tableta
   vertical y teléfono (menos de 900 px) el mapa queda arriba y los paneles debajo, con
   desplazamiento; la ficha de cada parada sale como hoja inferior.
@@ -61,15 +63,16 @@ Si el terreno no aparece, la app muestra un aviso en pantalla.
 ## Estructura
 
 ```
-index.html      estructura de la pantalla
-css/hud.css     estilo del visor
-js/data.js      zonas, rutas, paradas, capas y límites (en español)
-js/en.js        textos en inglés de las zonas
-js/app.js       mapa, cálculos y HUD (los textos usan T('español', 'inglés'))
+marswalk/
+  index.html      estructura de la pantalla
+  css/hud.css     estilo del visor
+  js/data.js      zonas, rutas, paradas, capas y límites (en español)
+  js/en.js        textos en inglés de las zonas
+  js/app.js       mapa, cálculos y HUD (los textos usan T('español', 'inglés'))
 ```
 
-Para añadir una zona, agrega una entrada a `ZONES` en `js/data.js` con sus puntos,
-ruta, paradas y capas, y un botón `data-mode` en `index.html`.
+Para añadir una zona, agrega una entrada a `ZONES` en `marswalk/js/data.js` con sus puntos,
+ruta, paradas y capas, y un botón `data-mode` en `marswalk/index.html`.
 
 ## Datos de NASA usados
 
@@ -83,7 +86,7 @@ ruta, paradas y capas, y un botón `data-mode` en `index.html`.
 | Clima de Jezero | MEDA, sols 1127–1133 (en vivo) | https://mars.nasa.gov/rss/api/?feed=weather&category=mars2020&feedtype=json |
 | Clima de Gale y Monte Sharp | REMS, todo el registro (en vivo) | https://mars.nasa.gov/rss/api/?feed=weather&category=msl&feedtype=json |
 | Fotos de las paradas | Navcam, Hazcam, Mastcam, Mastcam-Z | https://mars.nasa.gov/mars2020/multimedia/raw-images/ y API de fotos de MSL |
-| Clima espacial | NASA DONKI (CCMC): WSA-ENLIL y SEP | https://api.nasa.gov/ (DONKI). La clave va en `NASA_KEY`, `js/data.js` |
+| Clima espacial | NASA DONKI (CCMC): WSA-ENLIL y SEP | https://api.nasa.gov/ (DONKI). La clave va en `NASA_KEY`, `marswalk/js/data.js` |
 | Unidad geológica | USGS, mapa global de Marte (SIM 3292) | https://astrogeology-usgs.hub.arcgis.com/pages/interactive-maps-mars (servicio ArcGIS) |
 | Ideas de interfaz | Comparar capas y control de fecha | https://worldview.earthdata.nasa.gov/ |
 | Radiación | RAD (Curiosity), 0,64 mSv/día | Hassler et al., Science, 2014 |
@@ -110,7 +113,7 @@ Jezero no tiene obstáculos de fábrica: no se encontró uno documentado por NAS
   Nunca pone "Evento de partículas" sola: DONKI no mide partículas en Marte, así que esa
   opción la elige la tripulación. Cualquier elección manual manda sobre DONKI.
 - **Simulado:** polvo, oxígeno y batería son controles o modelos simples.
-- **Límites de NASA** (en `ASSUME`, `js/data.js`): son los del traje xEVA de Artemis III,
+- **Límites de NASA** (en `ASSUME`, `marswalk/js/data.js`): son los del traje xEVA de Artemis III,
   para la Luna; NASA no ha publicado los de Marte. Fuente: Scoville, Z. (2021), *Artemis III
   EVA Mission Capability for de Gerlache-Shackleton Ridge*, NASA, NTRS 20210026296,
   https://ntrs.nasa.gov/citations/20210026296
@@ -141,7 +144,7 @@ Jezero no tiene obstáculos de fábrica: no se encontró uno documentado por NAS
 - El clima de Jezero es el último que publica la API (abril de 2024): solo 4 sols válidos.
 - El mapa geológico de USGS es global (escala 1:20 000 000): describe la región, no la
   roca de cada parada. No hay mapas detallados de USGS para estas tres zonas.
-- Sin internet, el clima queda en el valor guardado en `data.js` y la geología muestra
+- Sin internet, el clima queda en el valor guardado en `marswalk/js/data.js` y la geología muestra
   un aviso.
 - `DEMO_KEY` de api.nasa.gov admite pocas consultas por hora. La respuesta de DONKI se
   guarda una hora en el navegador; para la presentación conviene una clave propia (gratis).
